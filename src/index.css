@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+@font-face {
+    font-family: Satoshi-Variable ;
+    src: url('../src/assets/fonts/TTF/Satoshi-Variable.ttf');
+    font-display: swap;
+}
+body{
+    font-family: Satoshi-Variable ;
+}
+
+.custom-dropdown label {
+    font-weight: 500;
+    
+}
