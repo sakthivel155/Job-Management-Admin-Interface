@@ -17,10 +17,12 @@ const Dropdown = ({ label, options, onChange }) => {
   };
 
   return (
-    <div className="dropdown-container" style={{ position: 'relative', width: '200px' }}>
+    <div className="dropdown-container flex gap-5"  onClick={toggleDropdown} style={{ position: 'relative', width: '200px' }}>
+     <img src={Icons.jobTypeIcon} alt="jobType" className='w-[18px]' />
+     <div className='flex justify-between w-full'>
+        <label className='font-[500] text-[#787777]'>{selectedOption ? selectedOption.label : "Job type"}</label>
       <div 
         className="dropdown-header" 
-        onClick={toggleDropdown}
         style={{
           cursor: 'pointer',
           display: 'flex',
@@ -28,17 +30,17 @@ const Dropdown = ({ label, options, onChange }) => {
           alignItems: 'center'
         }}
       >
-        <span>{selectedOption ? selectedOption.label : label}</span>
+      
         <img src={ Icons.dropDownIcon} style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} alt="" />
         
       </div>
-      
+      </div>
       {isOpen && (
         <div 
           className="dropdown-options"
           style={{
             position: 'absolute',
-            top: '100%',
+            top: '200%',
             left: '0',
             right: '0',
             border: '1px solid #ccc',
@@ -86,8 +88,7 @@ const DropdownExample = () => {
 
   return (
   
-      <Dropdown 
-        label="Job type" 
+    <Dropdown 
         options={options} 
         onChange={handleChange}
       />

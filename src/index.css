@@ -9,7 +9,36 @@ body{
     font-family: Satoshi-Variable ;
 }
 
-.custom-dropdown label {
-    font-weight: 500;
-    
+
+input[type="date"] {
+    position: relative; /* Needed for positioning pseudo-elements */
+    appearance: none; /* Removes default styling for consistency */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding-right: 40px; /* Space for the custom icon */
+}
+
+/* Hide the default calendar icon but keep it functional */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 0; /* Makes the default icon invisible but still clickable */
+    width: 20px; /* Match the size of your custom icon */
+    height: 20px;
+    position: absolute;
+    right: 20px;
+    cursor: pointer; /* Ensures the area is clickable */
+    z-index: 1; /* Ensure it’s clickable over the custom icon */
+}
+
+/* Add custom icon using ::before */
+input[type="date"]::before {
+    content: '';
+    background: url('./assets/icons/dateInputIcon.svg') no-repeat center;
+    background-size: contain;
+    width: 20px; /* Adjust to your icon’s size */
+    height: 20px;
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none; /* Prevents the custom icon from blocking clicks */
 }
