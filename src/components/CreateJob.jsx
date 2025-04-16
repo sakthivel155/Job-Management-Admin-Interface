@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import LocationInput from "./LocationInput";
 import { Icons } from "./icon";
+import { use } from "react";
 
 export function CreateJob({ setCreateJobs }) {
   const sectionRef = useRef(null);
@@ -28,6 +29,7 @@ export function CreateJob({ setCreateJobs }) {
   });
 
   // Update newJobPost whenever any form field changes
+
   useEffect(() => {
     setNewJobPost({
       job_title: jobTitle,

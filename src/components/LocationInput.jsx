@@ -58,15 +58,14 @@ const LocationInput = ({ onCitySelect ,customStyle ,iconVisible ,placeholder}) =
   return (
     <div className={`${customStyle} relative`}>
       <div className="flex items-center justify-between relative h-12 rounded px-3 gap-5">
-       
-       {iconVisible && <img src={Icons.locationIcon} alt="location" className="w-[18px] mr-2" /> } 
+      
+      {iconVisible && <img src={Icons.locationIcon} alt="location" className="w-[18px] mr-2" /> } 
         <input
           type="text"
           className="w-full placeholder:font-[500] outline-none"
           placeholder={placeholder}
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          onFocus={() => setShowDropdown(true)}
         />
         <img 
           src={Icons.dropDownIcon} 
@@ -76,13 +75,13 @@ const LocationInput = ({ onCitySelect ,customStyle ,iconVisible ,placeholder}) =
         />
       </div>
 
-      {showDropdown && (
+      {showDropdown  && (
         <ul className="absolute z-10 bg-white w-full mt-1 border border-gray-300 rounded-lg max-h-60 overflow-auto">
-          {filteredCities.map((item, index) => (
+          {  filteredCities.map((item, index) => (
             <li
               key={index}
               className="py-2 px-3 hover:bg-gray-100 cursor-pointer"
-              onClick={() => handleCitySelect(item.city, item.stateName)}
+              onClick={() => handleCitySelect(item.city)}
             >
               {item.city}
             </li>
