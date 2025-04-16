@@ -146,7 +146,7 @@ const PriceRangeSlider = ({
       </div>
       
       {/* Custom style for range inputs */}
-      <style jsx>{`
+      <style>{`
         input[type=range]::-webkit-slider-thumb {
           pointer-events: auto;
           appearance: none;
