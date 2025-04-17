@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import LocationInput from "./LocationInput";
 import { Icons } from "./icon";
-import { use } from "react";
 
 export function CreateJob({ setCreateJobs }) {
   const sectionRef = useRef(null);
@@ -13,6 +12,9 @@ export function CreateJob({ setCreateJobs }) {
   const [maxSalary, setMaxSalary] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [deadline, setDeadline] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [statusMessage, setStatusMessage] = useState({ type: "", message: "" });
 
   // Update the newJobPost state whenever any of the form fields change
   const [newJobPost, setNewJobPost] = useState({
@@ -28,18 +30,43 @@ export function CreateJob({ setCreateJobs }) {
     application_deadline: "2025-05-29T18:30:00.000Z"
   });
 
-  // Update newJobPost whenever any form field changes
+  // Check for saved draft on component mount
+  useEffect(() => {
+    const savedDraft = localStorage.getItem('jobPostDraft');
+    if (savedDraft) {
+      try {
+        const draftData = JSON.parse(savedDraft);
+        setJobTitle(draftData.job_title || "");
+        setCompanyName(draftData.company_name || "");
+        setJobType(draftData.job_type || "fulltime");
+        setLocation(draftData.location || "");
+        setMinSalary(draftData.min_salary || "");
+        setMaxSalary(draftData.max_salary || "");
+        setJobDescription(draftData.job_description || "");
+        setDeadline(draftData.application_deadline ? draftData.application_deadline.split('T')[0] : "");
+        setStatusMessage({ type: "info", message: "Draft loaded successfully." });
+        
+        // Clear the message after 3 seconds
+        setTimeout(() => {
+          setStatusMessage({ type: "", message: "" });
+        }, 3000);
+      } catch (error) {
+        console.error("Error loading draft:", error);
+      }
+    }
+  }, []);
 
+  // Update newJobPost whenever any form field changes
   useEffect(() => {
     setNewJobPost({
       job_title: jobTitle,
       company_name: companyName,
       job_type: jobType,
+      experience_level: "1-3",
       location: location,
-      experience_level: "0-5",
+      max_salary: maxSalary,
       job_description: jobDescription,
       min_salary: minSalary,
-      max_salary: maxSalary,
       application_deadline: deadline || "2025-05-29T18:30:00.000Z"
     });
   }, [jobTitle, companyName, jobType, location, minSalary, maxSalary, jobDescription, deadline]);
@@ -67,6 +94,9 @@ export function CreateJob({ setCreateJobs }) {
     e.preventDefault();
     
     try {
+      setIsLoading(true);
+      setStatusMessage({ type: "info", message: "Submitting job posting..." });
+      
       const response = await fetch('https://job-management-admin-backend-y40m.onrender.com/api/set-job-post', {
         method: 'POST',
         headers: {
@@ -81,9 +111,49 @@ export function CreateJob({ setCreateJobs }) {
       
       const data = await response.json();
       console.log('Job created successfully:', data);
-      setCreateJobs(false); // Close the modal on success
+      setStatusMessage({ type: "success", message: "Job posted successfully!" });
+      
+      // Clear draft after successful submission
+      localStorage.removeItem('jobPostDraft');
+      
+      // Wait for 1.5 seconds to show success message before closing and refreshing
+      setTimeout(() => {
+        setCreateJobs(false); // Close the modal on success
+        window.location.reload(); // Refresh the page to show the new job
+      }, 1500);
+      
     } catch (error) {
       console.error('Error creating job:', error);
+      setStatusMessage({ type: "error", message: "Error to creating job Post. Please fill out this field" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle saving draft
+  const handleSaveDraft = () => {
+    try {
+      setIsSavingDraft(true);
+      setStatusMessage({ type: "info", message: "Saving draft..." });
+      
+      // Save to localStorage
+      localStorage.setItem('jobPostDraft', JSON.stringify(newJobPost));
+      
+      setTimeout(() => {
+        setStatusMessage({ type: "success", message: "Draft saved successfully!" });
+        
+        // Clear success message after 2 seconds
+        setTimeout(() => {
+          setStatusMessage({ type: "", message: "" });
+        }, 2000);
+        
+        setIsSavingDraft(false);
+      }, 500);
+      
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      setStatusMessage({ type: "error", message: "Error saving draft. Please try again." });
+      setIsSavingDraft(false);
     }
   };
 
@@ -98,7 +168,18 @@ export function CreateJob({ setCreateJobs }) {
         ref={sectionRef}
         className="bg-white shadow-lg p-8 rounded-xl w-full max-w-4xl scale-[80%]"
       >
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-10">Create Job Opening</h2>
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Create Job Opening</h2>
+        
+        {/* Status Message */}
+        {statusMessage.message && (
+          <div className={`mb-4 p-3 rounded-lg text-center ${
+            statusMessage.type === "success" ? "bg-green-100 text-green-800" :
+            statusMessage.type === "error" ? "bg-red-100 text-red-800" :
+            "bg-blue-100 text-blue-800"
+          }`}>
+            {statusMessage.message}
+          </div>
+        )}
         
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-2 gap-6">
@@ -125,6 +206,7 @@ export function CreateJob({ setCreateJobs }) {
                   iconVisible={false} 
                   onCitySelect={handleLocationSelect}
                   customStyle="w-full text-[16px] text-[#656565] border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-gray-700" 
+                  initialValue={location}
                 />
               </div>
               
@@ -236,21 +318,48 @@ export function CreateJob({ setCreateJobs }) {
           <div className="flex justify-between mt-10">
             <button 
               type="button" 
-              className="flex items-center gap-2 border-2 border-gray-600 bg-white text-gray-800 font-bold py-3 px-8 rounded-lg"
+              onClick={handleSaveDraft}
+              disabled={isLoading || isSavingDraft}
+              className="flex items-center gap-2 border-2 border-gray-600 bg-white text-gray-800 font-bold py-3 px-8 rounded-lg disabled:opacity-50"
             >
-              Save Draft
-              <svg width="10" height="13" viewBox="0 0 10 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 7.5L5 11.5L1 7.5M9 1.5L5 5.5L1 1.5" stroke="#222222" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+              {isSavingDraft ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-gray-800" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  Save Draft
+                  <svg width="10" height="13" viewBox="0 0 10 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 7.5L5 11.5L1 7.5M9 1.5L5 5.5L1 1.5" stroke="#222222" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </>
+              )}
             </button>
             <button 
               type="submit"
-              className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-[600] py-3 px-8 rounded-lg"
+              disabled={isLoading || isSavingDraft}
+              className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-[600] py-3 px-8 rounded-lg disabled:opacity-50"
             >
-              Publish
-              <svg width="12" height="11" viewBox="0 0 12 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M7 1.5L11 5.5L7 9.5M1 1.5L5 5.5L1 9.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Publishing...
+                </>
+              ) : (
+                <>
+                  Publish
+                  <svg width="12" height="11" viewBox="0 0 12 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7 1.5L11 5.5L7 9.5M1 1.5L5 5.5L1 9.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </>
+              )}
             </button>
           </div>
         </form>

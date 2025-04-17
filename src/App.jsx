@@ -35,7 +35,7 @@ function App() {
   };
   return (
     <div>
-      <header className='bg-[#ffffff]  shadow-[0px_0px_14px_0px_rgba(198,191,191,0.25)] flex flex-col items-center py-5 gap-5'>
+      <header className='bg-[#ffffff] shadow-[0px_0px_14px_0px_rgba(198,191,191,0.25)] flex flex-col items-center py-4 gap-5'>
        {/* Navbar Section */}
         <section className='flex items-center gap-10 font-[600] bg-[#FCFCFC] px-6 border-[1px] border-[#FCFCFC] py-4 rounded-full shadow-[0px_0px_20px_0px_rgba(127,127,127,0.15)]'>
 
@@ -55,18 +55,18 @@ function App() {
           </section>
           {/* Search and Filter Section */}
           <section className='w-full '>
-              <div className='flex items-center justify-around  mx-30'>
+              <div className='flex items-center justify-around  '>
                 <div className='flex gap-5'>
                     <img src={Icons.searchIcon} alt="search" className='w-[18px]' />
                     <input value={jobTitle} onChange={(e)=>setJobTitle(e.target.value)} type="text" className='w-[179px] placeholder:font-[500] outline-none' placeholder='Search By Job Title, Role'  />
             </div>
             <div className='relative flex gap-5'>
-            <div className=' absolute h-[48px] border-[1.5px] border-[#cbcbcb] left-[-50px]'></div>
+            <div className=' absolute h-[48px] border-[1.5px] border-[#cbcbcb] left-[-10px]'></div>
 
                 <LocationInput placeholder={'Preferred Location'} iconVisible={true}  onCitySelect={handleCitySelection}/>
                 </div>
             <div className='relative flex gap-5'>
-            <div className=' absolute h-[48px] border-[1.5px] border-[#cbcbcb] left-[-40px] top-[-12px]'></div>
+            <div className=' absolute h-[48px] border-[1.5px] border-[#cbcbcb] left-[-60px] top-[-12px]'></div>
                   
               <DropdownExample options={options} onChange={onChange}  />
                 </div>
@@ -77,15 +77,17 @@ function App() {
               </div>
           </section>
       </header>
-      <div className="grid gap-5 w-[88%] mx-auto my-3 tablet:grid-cols-[repeat(auto-fill,minmax(390px,1fr))]  laptop:my-10 laptop:grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
+      <div className="grid gap-5 w-[92%] mx-auto my-10 grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
   {displayJobs.map((job) => {
     return (
       <JobPostCard
         key={job.id}
+        brand_logo_img_url={job.brand_logo_img_url}
         job_title={job.job_title}
-        job_type={job.job_type}
+        experience_level={job.experience_level}
         location={job.location}
-        obj={job}
+        max_salary={job.max_salary}
+        job_description={job.job_description}
       />
     );
   })}
